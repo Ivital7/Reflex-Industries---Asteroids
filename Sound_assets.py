@@ -8,6 +8,7 @@ LASER_VOLUME = 0.87
 SUPER_LASER_VOLUME = 0.2
 MUSIC_VOLUME = 0.5
 
+
 #  -- Game sounds --  #
 
 aster_break1 = pygame.mixer.Sound("SOUNDS\\EXPLOSION1.wav")
@@ -22,13 +23,14 @@ base_damage = pygame.mixer.Sound("SOUNDS\\BASE_DAMAGE.wav")
 base_damage.set_volume(DAMAGE_VOLUME * 1.1)
 aster_damage = pygame.mixer.Sound("SOUNDS\\ASTEROID_DAMAGE.wav")
 aster_damage.set_volume(DAMAGE_VOLUME)
-
 asteroid_breaks = (aster_break1, aster_break2, aster_break3, aster_break4)
 laser_fire = pygame.mixer.Sound("SOUNDS\\LASER.wav")
 laser_fire.set_volume(LASER_VOLUME)
 super_laser_fire = pygame.mixer.Sound("SOUNDS\\SUPER_LASER.wav")
 super_laser_fire.set_volume(SUPER_LASER_VOLUME)
 
+
+sound_list = [aster_break1, aster_break2, aster_break3, aster_break4, base_damage, aster_damage, laser_fire, super_laser_fire]
 pygame.mixer.music.load("SOUNDS\\Sountrack_loop.mp3")
 pygame.mixer.music.set_volume(MUSIC_VOLUME)
 
@@ -50,3 +52,17 @@ def bg_music_pause():
 
 def bg_music_unpause():
     pygame.mixer.music.unpause()
+
+
+def mute_all():
+    for sound_i in range(len(sound_list)):
+        sound_list[sound_i].set_volume(0)
+
+
+def reset_vol():
+    for sound_i in range(len(asteroid_breaks)):
+        asteroid_breaks[sound_i].set_volume(EXPLODE_VOLUME)
+    base_damage.set_volume(DAMAGE_VOLUME)
+    aster_damage.set_volume(DAMAGE_VOLUME)
+    laser_fire.set_volume(LASER_VOLUME)
+    super_laser_fire.set_volume(SUPER_LASER_VOLUME)
