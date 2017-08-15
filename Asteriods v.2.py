@@ -39,7 +39,7 @@ FPS = 60 # frames per second setting
 fpsClock = pygame.time.Clock()
 
 SCREEN_WIDTH = SCREEN_HEIGHT = 700
-NUMBER_OF_WAVES = 3
+NUMBER_OF_WAVES = 4 # number of waves before boss
 SCORE = 0 # Initialise score as 0
 speed_up = False
 text_score = 'Score : ' + str(SCORE)
@@ -49,10 +49,13 @@ font_Score = pygame.font.Font('freesansbold.ttf', 20)
 font_END = pygame.font.SysFont("Impact", 48)
 win_surf = font_END.render(win_text, True, WHITE, BLACK)
 loss_surf = font_END.render(loss_text, True, WHITE, BLACK)
+star_field = pygame.image.load("Star_field.jpg")
+star_field = pygame.transform.scale(star_field, (SCREEN_WIDTH, SCREEN_HEIGHT))
+mute = False
 
 score_Surf = font_Score.render(text_score, True, WHITE, BLACK)
-textRectObj = score_Surf.get_rect()
-textRectObj.topleft = (10, 10)
+text_score_RectObj = score_Surf.get_rect()
+text_score_RectObj.topleft = (10, 10)
 
 
 class Ship:
@@ -144,7 +147,7 @@ def asteroid_gen():
         list_quarter.remove(quarter)
 
         x = random.randint(quarter[0], quarter[1])
-        s = (random.random() * 3) + 14.0
+        s = (random.random() * (WAVE + 3)) + 14.0
         aster = Asteroid(size, s, x)
         
         list_asteroids.append(aster)
@@ -164,7 +167,7 @@ def collision(list_bullets, list_asteroids, SCORE):
                     list_bullets.remove(bullet_i)
                     aster_i.life -= 1
                     aster_i.radius_asteroid -= 2
-                    aster_i.width - 1
+                    aster_i.width -= 1
                     hits += 1
                     SCORE = update_score('hit', SCORE)
 
@@ -305,7 +308,7 @@ def in_zone():
 def boss_child_gen():
     """ Generate 1 asteroid at the SCREEN_WIDTH of BOSS """
 
-    speed = (random.random() * 3) + 14.0
+    speed = (random.random() * (WAVE + 5)) + 14.0
     size  = (random.randint(1, 4))
     aster = Asteroid(size, speed, BOSS.pos_x - 10, BOSS.pos_y + 10)
     
@@ -321,6 +324,7 @@ def end_of_game(): # needs to be edited; score missing
     - option to go back to menu """
     if life_length == 0:
         DISPLAYSURF.fill(BLACK)
+        DISPLAYSURF.blit(star_field, (0, 0))
         DISPLAYSURF.blit(loss_surf, (((SCREEN_WIDTH - loss_surf.get_width()) // 2), (SCREEN_HEIGHT - loss_surf.get_height()) // 2))
         pygame.display.update()
         quit_game()
@@ -328,11 +332,13 @@ def end_of_game(): # needs to be edited; score missing
         # print loss screen
     elif not BOSS.alive:
         DISPLAYSURF.fill(BLACK)
+        DISPLAYSURF.blit(star_field, (0, 0))
         DISPLAYSURF.blit(win_surf, (((SCREEN_WIDTH - win_surf.get_width()) // 2), (SCREEN_HEIGHT - win_surf.get_height()) // 2))
         pygame.display.update()
         quit_game()
         # print win screen
     DISPLAYSURF.fill(BLACK)
+    DISPLAYSURF.blit(star_field, (0, 0))
 
 
 def quit_game():
@@ -361,7 +367,11 @@ def laser_power_up(score):
     
     wait = True
     while player.pos_x > 0:
+
+
+
         DISPLAYSURF.fill(BLACK)
+        DISPLAYSURF.blit(star_field, (0, 0))
         player.update_pos("left")
         pygame.draw.line(DISPLAYSURF, RED, (player.pos_x, player.pos_y), (player.pos_x, 0), SCREEN_WIDTH // 20)
         player.display(SCREEN_WIDTH, SCREEN_HEIGHT)
@@ -370,7 +380,7 @@ def laser_power_up(score):
         pygame.display.update()
         if wait:
             time.sleep(0.5)
-        wait=False
+        wait = False
         fpsClock.tick(FPS)
         play_sound(super_laser_fire)
         for aster_i in list_asteroids:
@@ -413,6 +423,7 @@ pygame.display.set_caption('Asteroids')
 DISPLAYSURF = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 # draws background
 DISPLAYSURF.fill(BLACK)
+DISPLAYSURF.blit(star_field, (0, 0))
 speed = SCREEN_WIDTH // 400
 
 player = Ship(SCREEN_WIDTH, SCREEN_HEIGHT, speed)##creates player
@@ -431,13 +442,22 @@ bg_music_start()
 
 ######################################################################################
 while True:
-    text_score = 'Score: ' + str(int(SCORE))
-    score_Surf = font_Score.render(text_score, True, WHITE, BLACK)
-    textRectObj = score_Surf.get_rect()
-    textRectObj.topleft = (10, 10)
 
+    text_score = 'Score: ' + str(int(SCORE))
+    text_wave = "Wave : " + str(int(WAVE + 1))
+    score_Surf = font_Score.render(text_score, True, WHITE, BLACK)
+    wave_Surf = font_Score.render(text_wave, True, WHITE, BLACK)
+
+    text_score_RectObj = score_Surf.get_rect()
+    text_score_RectObj.topleft = (10, 10)
+
+    text_wave_RectObj = wave_Surf.get_rect()
+    text_score_RectObj.topleft = (10, 30)
     DISPLAYSURF.fill(BLACK)
-    DISPLAYSURF.blit(score_Surf, textRectObj)
+    DISPLAYSURF.blit(star_field, (0, 0))
+
+    DISPLAYSURF.blit(score_Surf, text_score_RectObj)
+    DISPLAYSURF.blit(wave_Surf, text_wave_RectObj)
 
     player.vel = speed
     # draws player
@@ -516,6 +536,17 @@ while True:
 
             if event.key == K_LCTRL or event.key == K_RCTRL:
                 speed_up = not speed_up
+
+            if event.key == K_m:
+                if not mute:
+                    mute = not mute
+                    bg_music_pause()
+                    mute_all()
+                else:
+                    mute = not mute
+                    bg_music_unpause()
+                    reset_vol()
+
 
         if event.type == QUIT or (event.type == KEYDOWN and event.key == K_ESCAPE):
             pygame.quit()
