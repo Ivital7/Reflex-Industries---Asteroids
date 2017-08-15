@@ -1,5 +1,5 @@
 import pygame, random
-pygame.init()
+
 pygame.mixer.init()
 
 EXPLODE_VOLUME = 0.7
@@ -8,7 +8,8 @@ LASER_VOLUME = 0.87
 SUPER_LASER_VOLUME = 0.2
 MUSIC_VOLUME = 0.5
 
-## -- Game sounds -- ##
+#  -- Game sounds --  #
+
 aster_break1 = pygame.mixer.Sound("SOUNDS\\EXPLOSION1.wav")
 aster_break1.set_volume(EXPLODE_VOLUME)
 aster_break2 = pygame.mixer.Sound("SOUNDS\\EXPLOSION2.wav")
@@ -39,5 +40,13 @@ def play_sound(sounds):
         sounds.play()
 
 
-def bg_music():
-	pygame.mixer.music.play(-1, 0.0)
+def bg_music_start():
+    pygame.mixer.music.play(-1, 0.0)
+
+
+def bg_music_pause():
+    pygame.mixer.music.pause()
+
+
+def bg_music_unpause():
+    pygame.mixer.music.unpause()
