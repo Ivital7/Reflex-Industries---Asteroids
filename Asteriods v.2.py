@@ -316,12 +316,36 @@ def boss_child_gen():
 
     return 1
 
+def Hall_of_Fame():
+    with open('Hall_of_Fame.txt', 'r') as f:
+        file_data = list(f)
+    return file_data   
+    
 
-def end_of_game(): # needs to be edited; score missing
+def end_of_game(score): # needs to be edited; score missing
     """ Last screen with :
     - score
     - time spent on game
     - option to go back to menu """
+    win_surf = font_END.render(win_text + ": " + str(score), True, WHITE, BLACK)
+    loss_surf = font_END.render(loss_text + ": " + str(score), True, WHITE, BLACK)
+    with open('Hall_of_Fame.txt', 'r') as f:
+        file_data = list(f)
+        
+    for x in range(len(file_data)):
+        file_data[x] = file_data[x].split()
+
+    for x in range(10):
+        if score > int(file_data[x][1]):
+            p_name = input("Enter Your Name: ")
+            file_data.insert(x,(p_name,str(score)))
+            break
+    
+    f = open('Hall_of_Fame.txt', 'w')
+    for x in range(len(file_data)):
+        f.write(str(file_data[x][0]) + " " + str(file_data[x][1]) + "\n")
+    f.close
+        
     if life_length == 0:
         DISPLAYSURF.fill(BLACK)
         DISPLAYSURF.blit(star_field, (0, 0))
@@ -420,11 +444,11 @@ time_sec = 0.0
 end = False
 
 pygame.display.set_caption('Asteroids')
-DISPLAYSURF = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
+DISPLAYSURF = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT),pygame.RESIZABLE)
 # draws background
 DISPLAYSURF.fill(BLACK)
 DISPLAYSURF.blit(star_field, (0, 0))
-speed = SCREEN_WIDTH // 400
+speed = SCREEN_WIDTH // 400 * 3
 
 player = Ship(SCREEN_WIDTH, SCREEN_HEIGHT, speed)##creates player
 scope = False
@@ -459,7 +483,6 @@ while True:
     DISPLAYSURF.blit(score_Surf, text_score_RectObj)
     DISPLAYSURF.blit(wave_Surf, text_wave_RectObj)
 
-    player.vel = speed
     # draws player
     player.display(SCREEN_WIDTH, SCREEN_HEIGHT)
 
@@ -476,7 +499,7 @@ while True:
         pygame.draw.rect(DISPLAYSURF, COLOR, (player.pos_x - SCREEN_WIDTH // 35, player.pos_y + SCREEN_HEIGHT // 35, life_length, SCREEN_HEIGHT // 80))
 
     else:
-        end_of_game()
+        end_of_game(SCORE)
 
     pygame.draw.polygon(DISPLAYSURF, RED, ((0, player.pos_y + SCREEN_HEIGHT // 20), (SCREEN_WIDTH, player.pos_y + SCREEN_HEIGHT // 20), (SCREEN_WIDTH, SCREEN_HEIGHT), (0, SCREEN_HEIGHT)))#draws base
 
@@ -512,8 +535,10 @@ while True:
     boss_hit += boss_collision(list_bullets,boss_x,boss_y)  # checks for an attack on boss
 
     key_i = pygame.key.get_pressed()  # returns a list storing true if a key is pressed and false if not pressed for all keys
-    if speed_up:      
-        player.vel = speed * 3
+    if key_i[K_LCTRL] or key_i[K_RCTRL]:      
+        player.vel = speed // 3
+    else:
+        player.vel = speed
 
     if key_i[K_RIGHT]:
         player.update_pos("right")
@@ -523,7 +548,14 @@ while True:
 
     for event in pygame.event.get():
         
+        if event.type == VIDEORESIZE:
+            DISPLAYSURF = pygame.display.set_mode((event.w, event.h),pygame.RESIZABLE)
+            SCREEN_HEIGHT = event.h 
+            SCREEN_WIDTH = event.w
+            
         if event.type == KEYDOWN:
+            if event.key == K_h:
+                print(Hall_of_Fame())
             if event.key == K_SPACE:
                 if len(list_bullets) <= 4:
                     gen_bullet(player.pos_x, player.pos_y)
@@ -534,8 +566,8 @@ while True:
             if event.key == K_s:
                 scope = not scope
 
-            if event.key == K_LCTRL or event.key == K_RCTRL:
-                speed_up = not speed_up
+##            if event.key == K_LCTRL or event.key == K_RCTRL:
+##                speed_up = not speed_up
 
             if event.key == K_m:
                 if not mute:
@@ -588,7 +620,7 @@ while True:
     time_sec += 1 / 60
 
     if end:
-        end_of_game()
+        end_of_game(SCORE)
 
     pygame.display.update()
     fpsClock.tick(FPS)
